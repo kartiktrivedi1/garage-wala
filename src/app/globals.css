@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #111111;
+  --paper-soft: #f7f6f3;
+  --mist: #edece7;
+  --ink: #111111;
+  --ink-soft: #1b1b1e;
+  --brand: #ff5a1f;
+  --brand-dark: #e0480f;
+  --brand-glow: #ff7a45;
+  --success: #22c55e;
+  --border-soft: rgba(17, 17, 17, 0.08);
+}
+
+.dark {
+  --background: #0b0b0c;
+  --foreground: #f5f4f1;
+  --paper-soft: #131314;
+  --mist: #1a1a1c;
+  --ink: #f5f4f1;
+  --ink-soft: #eae9e6;
+  --border-soft: rgba(255, 255, 255, 0.09);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-paper-soft: var(--paper-soft);
+  --color-mist: var(--mist);
+  --color-ink: var(--ink);
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-glow: var(--brand-glow);
+  --color-success: var(--success);
+  --color-border-soft: var(--border-soft);
+  --font-sans: var(--font-display);
+  --font-display: var(--font-display);
+}
+
+* {
+  border-color: var(--border-soft);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-display), ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+::selection {
+  background: var(--brand);
+  color: #fff;
+}
+
+.font-display {
+  font-family: var(--font-display), ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* Glassmorphism utility */
+.glass {
+  background: color-mix(in srgb, var(--paper-soft) 55%, transparent);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid var(--border-soft);
+}
+
+/* Road lane-marker divider — the brand's signature motif */
+.road-divider {
+  height: 3px;
+  width: 100%;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--brand) 0 28px,
+    transparent 28px 52px
+  );
+  opacity: 0.55;
+  mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+}
+
+.text-gradient-brand {
+  background: linear-gradient(90deg, var(--brand) 0%, var(--brand-glow) 55%, #ffb27a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-14px); }
+}
+.animate-float {
+  animation: float-y 6s ease-in-out infinite;
+}
+
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee-x 22s linear infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50% { opacity: 0.65; transform: scale(1.08); }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 2.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
