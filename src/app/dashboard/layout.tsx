@@ -1,10 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Wrench, MapPin, FileText, CreditCard, Bell,
-  Users, Store, BarChart3, LogOut, Wrench as WrenchIcon,
+  Users, Store, BarChart3, LogOut, Wrench as WrenchIcon, Loader2,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/contexts/auth-context";
@@ -35,10 +36,30 @@ const navByRole = {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, logOut } = useAuth();
+  const { user, loading, logOut, configured } = useAuth();
   const router = useRouter();
-  const role = (pathname.split("/")[2] as keyof typeof navByRole) || "customer";
-  const nav = navByRole[role] ?? navByRole.customer;
+  const routeRole = (pathname.split("/")[2] as keyof typeof navByRole) || "customer";
+  const nav = navByRole[routeRole] ?? navByRole.customer;
+
+  useEffect(() => {
+    if (!configured) return; // allow preview without Firebase configured
+    if (loading) return;
+    if (!user) {
+      router.replace("/login");
+      return;
+    }
+    if (user.role !== routeRole) {
+      router.replace(`/dashboard/${user.role}`);
+    }
+  }, [configured, loading, user, routeRole, router]);
+
+  if (configured && (loading || !user || user.role !== routeRole)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-paper-soft">
+        <Loader2 className="h-6 w-6 animate-spin text-brand" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-paper-soft">

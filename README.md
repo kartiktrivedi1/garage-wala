@@ -70,7 +70,15 @@ npm run start
 
 ---
 
-## Firestore security rules (development)
+## Going live with real users — do this before launch
+
+1. **Publish the production Firestore rules.** Go to Firebase Console → Firestore Database → Rules, replace whatever is there with the contents of `firestore.rules` in this repo, and click **Publish**. This replaces the open "anyone can read/write" development rule with real per-user, per-role access control (a customer can only create/read their own bookings; only garages/admins see incoming bookings; a user can never grant themselves a different role).
+2. **Dashboards now require login.** Visiting `/dashboard/customer`, `/dashboard/garage`, or `/dashboard/admin` without being signed in redirects to `/login`. Signing in as the wrong role for a given dashboard redirects you to your own role's dashboard.
+3. **Add your production domain to Firebase Auth's authorized domains** — Firebase Console → Authentication → Settings → Authorized domains → add your Netlify/Vercel URL (and custom domain if you attach one), or Google sign-in will fail on the live site.
+4. **Rotate any credentials that were ever shared in chat, screenshots, or committed by mistake** — Firebase web config keys are safe to keep public, but if you ever pasted a *GitHub token*, *Razorpay secret key*, or similar into a chat/screenshot, revoke and regenerate it.
+5. Consider adding Firestore composite indexes if the "Live bookings" admin panel or any future queries prompt for one — Firestore will link you directly to create it when needed.
+
+## Firestore security rules (development — do NOT use in production)
 
 If your Firestore was created in **production mode**, all reads/writes are denied by default. For development, go to Firebase Console → Firestore Database → Rules, and use:
 

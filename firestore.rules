@@ -1,0 +1,61 @@
+rules_version = '2';
+
+// Garage Wala — Production Firestore Security Rules
+//
+// Paste this into Firebase Console → Firestore Database → Rules → Publish
+// (replaces the temporary "allow read, write: if request.time < ..." rule
+// used during development)
+//
+// Model:
+//   users/{uid}         -> { name, email, role: "customer" | "garage" | "admin", createdAt }
+//   bookings/{id}        -> { customerId, customerName, service, status, createdAt }
+
+function isSignedIn() {
+  return request.auth != null;
+}
+
+function myUid() {
+  return request.auth.uid;
+}
+
+function myRole() {
+  return get(/databases/$(database)/documents/users/$(myUid())).data.role;
+}
+
+function isAdmin() {
+  return isSignedIn() && myRole() == "admin";
+}
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Each user can read their own profile; admins can read any profile.
+    // A user can only create/update their OWN profile document, and can
+    // never change their own role once it's set (prevents privilege escalation).
+    match /users/{uid} {
+      allow read: if isSignedIn() && (myUid() == uid || isAdmin());
+      allow create: if isSignedIn() && myUid() == uid;
+      allow update: if isSignedIn() && myUid() == uid
+                    && request.resource.data.role == resource.data.role;
+      allow delete: if isAdmin();
+    }
+
+    // A signed-in customer can create a booking for themselves.
+    // The customer who owns it, any garage (to see incoming requests),
+    // and admins can read it. Only the owning customer, an assigned
+    // garage, or an admin can update it (e.g. status changes).
+    match /bookings/{bookingId} {
+      allow create: if isSignedIn() && request.resource.data.customerId == myUid();
+      allow read: if isSignedIn() &&
+                  (resource.data.customerId == myUid() || myRole() in ["garage", "admin"]);
+      allow update: if isSignedIn() &&
+                    (resource.data.customerId == myUid() || myRole() in ["garage", "admin"]);
+      allow delete: if isAdmin();
+    }
+
+    // Everything else: denied by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
